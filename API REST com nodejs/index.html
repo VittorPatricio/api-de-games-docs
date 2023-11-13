@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=], initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <section id="campologin">
+        <h2>LOGIN</h2>
+        <input type="text" name="email" id="email" placeholder="email@email">
+        <br>
+        <br>
+        <input type="text" name="password" id="password" placeholder="*********">
+        <br>
+        <br>
+        <br>
+        <button onclick="login()">Entrar</button>
+        <hr>
+    </section>
+    <h1>lista de games</h1>
+    <ul id="games">
+        
+    </ul>
+    <hr>
+    <h4>Novo game</h4>
+    <input type="text" name="title" id="title" placeholder="titulo"><br>
+    <input type="number" id="year" name="year" placeholder="Ano"><br>
+    <input type="price" id="price" namme="price"><br>
+
+    <button type="button" onclick="createGame()">Calcular</button>
+    <br>
+    <hr>
+    <br>
+    <h4>Editar Game</h4>
+    <input type="text" name="idEdit" id="idEdit" placeholder="ID" readonly><br>
+    <input type="text" name="titleEdit" id="titleEdit" placeholder="titulo"><br>
+    <input type="number" id="yearEdit" name="yearEdit" placeholder="Ano"><br>
+    <input type="price" id="priceEdit" name="priceEdit" placeholder="$"><br>
+
+    <button type="button" onclick="updateGame()">Editar</button>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script>
+document.querySelector("html").style.cursor = "url(my-mouse-pointer.cur), pointer";
+document.querySelector("html").style.cursor = "url(my-mouse-pointer.cur), default";
+
+var axiosConfig = {
+    headers: {
+        Authorization: "Bearer " + localStorage.getItem("token")
+    }
+}
+
+function login(){
+    var loginField = document.getElementById("campologin")
+    var emailField = document.getElementById("email");
+    var passwordField = document.getElementById("password");
+
+    var email = emailField.value;
+    var password = passwordField.value;
+
+    axios.post("http://localhost:3000/auth",{
+        email,
+        password
+    }).then(response =>{
+        var token = response.data. token;
+        
+        localStorage.setItem("token", token);
+        
+        alert("logado!");
+
+        loginField.style.display = "none";
+
+    }).catch(error =>{
+        alert("login invalido!");
+        console.log(error);
+    })
+}
+
+function createGame(){
+        var titleInput = document.getElementById("title");
+        var yearInput = document.getElementById("year");
+        var priceInput = document.getElementById("price");
+
+        var game = {
+            title: titleInput.value,
+            year: yearInput.value,
+            price: priceInput.value
+        }
+        axios.post("http://localhost:3000/game", game, axiosConfig).then(response =>{
+        
+            if(response.status == 200){ //esse 200 é sobre a requisição http
+                alert("game cadastrado!")
+            }
+        }).catch(err =>{
+            consol.log(err)
+        });
+}
+
+function deleteGame(ListItem){
+    var id = ListItem.getAttribute("data-id");
+    axios.delete("http://localhost:3000/game/"+id, axiosConfig).then(response =>{
+        alert("Game deletado")
+    }).catch(err =>{
+        console.log(err);
+    });
+
+}
+function loadForm(ListItem){
+    var id = ListItem.getAttribute("data-id");
+    var title = ListItem.getAttribute("data-title");
+    var year = ListItem.getAttribute("data-year");
+    var price = ListItem.getAttribute("data-price");
+    document.getElementById("idEdit").value = id;
+    document.getElementById("titleEdit").value = title;
+    document.getElementById("yearEdit").value = year;
+    document.getElementById("priceEdit").value = price;
+}
+
+function updateGame(){
+    var idInput = document.getElementById("idEdit");
+    var titleInput = document.getElementById("titleEdit");
+        var yearInput = document.getElementById("yearEdit");
+        var priceInput = document.getElementById("priceEdit");
+
+        var game = {
+            title: titleInput.value,
+            year: yearInput.value,
+            price: priceInput.value
+        }
+
+        var id = idInput.value;
+
+        axios.put("http://localhost:3000/game/"+id, game, axiosConfig).then(response =>{
+        
+            if(response.status == 200){ //esse 200 é sobre a requisição http
+                alert("game atualizado!")
+            }
+        }).catch(err =>{
+            consol.log(err)
+        });
+}
+
+axios.get("http://localhost:3000/games", axiosConfig).then(response =>{
+    var games = response.data;
+    var list = document.getElementById("games");
+    games.forEach(game =>{
+      
+        var item = document.createElement("li");
+      
+        item.setAttribute("data-id", game.id);
+        item.setAttribute("data-title", game.title);
+        item.setAttribute("data-year", game.year);
+        item.setAttribute("data-price", game.price);
+        
+        item.innerHTML = game.id + " - " + game.title + " - $" + game.price;
+        
+        var deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "Deletar";
+        deleteBtn.addEventListener("click",function(){
+            deleteGame(item);
+        })
+        
+        var editBtn = document.createElement("button");
+        editBtn.innerHTML = "Editar"
+        editBtn.addEventListener("click", function(){
+            loadForm(item);
+        })
+
+        item.appendChild(deleteBtn);
+        item.appendChild(deleteBtn);
+        item.appendChild(editBtn)
+
+        list.appendChild(item);
+    });
+});
+
+</script>
+</html>
