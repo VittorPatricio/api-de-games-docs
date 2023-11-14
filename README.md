@@ -1,5 +1,5 @@
 # Api de Games
-
+https://vittorpatricio.github.io/api-de-games-docs/API%20REST%20com%20nodejs/
 ## Endpoints
 ### GET /games
 Esse endpoint é responsável por retornar a listagem de todos os games cadastrados no banco de dados
